@@ -1,0 +1,9 @@
+<%- include('header') %>
+  <h2>Login</h2>
+  <form action='/login' method='POST'>
+    Email: <input type='text' name='email'><br>
+    Password: <input type='password' name='password'><br>
+    <input type='submit' value='Login'>
+  </form>
+  <p>Don't have an account? <a href='/signup'>Sign Up</a></p>
+<%- include('footer') %>
