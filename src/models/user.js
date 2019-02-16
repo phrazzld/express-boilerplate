@@ -3,13 +3,18 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const crypto = require('crypto')
+const validator = require('validator')
 
 const UserSchema = new Schema({
   email: {
     type: String,
     required: true,
     trim: true,
-    lowercase: true
+    lowercase: true,
+    unique: true,
+    validate: (value) => {
+      return validator.isEmail(value)
+    }
   },
   hash: {
     type: String,

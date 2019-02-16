@@ -18,8 +18,8 @@ describe('User model', function () {
         .catch(function (err) {
           expect(err).to.exist
           err.should.be.an.instanceOf(Error)
-          let validationErrorMessage = 'User validation failed: salt: Path `salt` is required., hash: Path `hash` is required.'
-          err.message.should.equal(validationErrorMessage)
+          let validationFailureMessage = 'User validation failed: salt: Path `salt` is required., hash: Path `hash` is required.'
+          err.message.should.equal(validationFailureMessage)
           done()
         })
     })
@@ -41,7 +41,22 @@ describe('User model', function () {
         })
     })
 
-    it('should fail if an invalid email is passed')
+    it('should fail if an invalid email is passed', function (done) {
+      const bob = new User({ email: 'bobgmail.com' })
+      bob.setPassword('passw0rd')
+      bob.save()
+        .then(function (user) {
+          log.fatal('user should not exist')
+          expect(user).to.be.null
+        })
+        .catch(function (err) {
+          expect(err).to.exist
+          err.should.be.an.instanceOf(Error)
+          let invalidEmailMessage = 'User validation failed: email'
+          err.message.should.include(invalidEmailMessage)
+          done()
+        })
+    })
 
     it('should fail if a user with that email already exists')
   })
