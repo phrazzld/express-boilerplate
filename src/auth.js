@@ -7,32 +7,37 @@ const User = require('@models/user').model
 
 passport.use(new LocalStrategy({
   usernameField: 'email'
-}, async (email, password, done) => {
-  try {
-    const user = await User.findOne({ email }).exec()
-    const validPassword = await user.validatePassword(password)
-    if (!user || !validPassword) {
-      return done(null, false, { message: 'Invalid username or password' })
-    }
-    return done(null, user)
-  } catch (err) {
-    log.fatal(err)
-    return done(err)
-  }
+}, (email, password, done) => {
+  User.findOne({ email })
+    .then(user => {
+      if (!user) {
+        return done(null, false, { message: `Can't find user with email ${email}` })
+      }
+      const validPassword = user.validatePassword(password)
+      if (!validPassword) {
+        return done(null, false, { message: `Invalid password` })
+      }
+      return done(null, user)
+    })
+    .catch(err => {
+      log.fatal(err)
+      return done(err)
+    })
 }))
 
 passport.serializeUser((user, done) => {
   return done(null, user._id)
 })
 
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id).exec()
-    return done(null, user)
-  } catch (err) {
-    log.fatal(err)
-    return done(err)
-  }
+passport.deserializeUser((id, done) => {
+  User.findById(id)
+    .then(user => {
+      return done(null, user)
+    })
+    .catch(err => {
+      log.fatal(err)
+      return done(err)
+    })
 })
 
 module.exports = {

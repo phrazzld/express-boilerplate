@@ -42,7 +42,7 @@ router.post('/signup', (req, res) => {
   const { body: {
     email,
     password,
-    "password-confirmation": passwordConfirmation
+    'password-confirmation': passwordConfirmation
   } } = req
   if (!email || !password) {
     return res.status(422).send({ message: 'Invalid email or password' })
@@ -53,12 +53,12 @@ router.post('/signup', (req, res) => {
   const finalUser = new User({ email: email, password: password })
   finalUser.setPassword(password)
   finalUser.save()
-    .then((user) => {
+    .then(user => {
       passport.authenticate('local')(req, res, function () {
         res.redirect('/profile')
       })
     })
-    .catch((err) => {
+    .catch(err => {
       log.fatal(err)
       res.status(500).send(err)
     })

@@ -4,7 +4,7 @@ const log = require('@root/config').loggers.dev()
 const User = require('@models/user').model
 
 const isLoggedIn = req => {
-  return req.user == null ? false : true
+  return req.user != null
 }
 
 const getUserEmail = req => {
