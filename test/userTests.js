@@ -6,6 +6,8 @@ const expect = require('chai').expect
 const User = require('@models/user').model
 const log = require('@root/config').loggers.test()
 
+const pass = 'passw0rd'
+
 describe('User model', function () {
   describe('saving new documents', function () {
     it('should fail if setPassword has not been called', function (done) {
@@ -24,9 +26,53 @@ describe('User model', function () {
         })
     })
 
+    it('should fail if an invalid email is passed', function (done) {
+      const jim = new User({ email: 'jimgmail.com' })
+      jim.setPassword(pass)
+      jim.save()
+        .then(function (user) {
+          log.fatal('user should not exist')
+          expect(user).to.be.null
+        })
+        .catch(function (err) {
+          expect(err).to.exist
+          err.should.be.an.instanceOf(Error)
+          let invalidEmailMessage = 'User validation failed: email'
+          err.message.should.include(invalidEmailMessage)
+          done()
+        })
+    })
+
+    it('should fail if a user with that email already exists', function (done) {
+      const bob = new User({ email: 'bob@gmail.com' })
+      const bobby = new User({ email: 'bob@gmail.com' })
+      bob.setPassword(pass)
+      bobby.setPassword(pass)
+      bob.save()
+        .then(function (bobUser) {
+          expect(bobUser).to.exist
+          bobby.save()
+            .then(function (bobbyUser) {
+              log.fatal('bobbyUser should not exist')
+              expect(bobbyUser).to.be.null
+            })
+            .catch(function (err) {
+              expect(err).to.exist
+              err.should.be.an.instanceOf(Error)
+              let existingEmailMessage = 'User validation failed: email: Error, expected `email` to be unique'
+              err.message.should.include(existingEmailMessage)
+              done()
+            })
+        })
+        .catch(function (err) {
+          log.fatal(err)
+          expect(err).to.be.null
+        })
+    })
+
     it('should succeed if setPassword has been called', function (done) {
       const bob = new User({ email: 'bob@gmail.com' })
-      bob.setPassword('passw0rd')
+      bob.setPassword(pass)
       bob.save()
         .then(function (user) {
           expect(user).to.not.have.any.keys('password')
@@ -41,24 +87,6 @@ describe('User model', function () {
         })
     })
 
-    it('should fail if an invalid email is passed', function (done) {
-      const bob = new User({ email: 'bobgmail.com' })
-      bob.setPassword('passw0rd')
-      bob.save()
-        .then(function (user) {
-          log.fatal('user should not exist')
-          expect(user).to.be.null
-        })
-        .catch(function (err) {
-          expect(err).to.exist
-          err.should.be.an.instanceOf(Error)
-          let invalidEmailMessage = 'User validation failed: email'
-          err.message.should.include(invalidEmailMessage)
-          done()
-        })
-    })
-
-    it('should fail if a user with that email already exists')
   })
 
   describe('methods', function () {
