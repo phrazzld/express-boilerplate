@@ -91,15 +91,70 @@ describe('User model', function () {
 
   describe('methods', function () {
     describe('setPassword', function () {
-      it('should not save the password plaintext to the user document')
+      it('should not save the password plaintext to the user document', function (done) {
+        const bob = new User({ email: 'bob@gmail.com' })
+        bob.setPassword(pass)
+        bob.save()
+          .then(function (user) {
+            expect(user).to.not.have.any.keys('password')
+            Object.keys(user._doc).forEach(function (key) {
+              key.should.not.equal('password')
+              user[key].should.not.equal(pass)
+            })
+            done()
+          })
+          .catch(function (err) {
+            log.fatal(err)
+            expect(err).to.be.null
+          })
+      })
 
-      it('should save a salt and hash to the user document')
+      it('should save a salt and hash to the user document', function (done) {
+        const bob = new User({ email: 'bob@gmail.com' })
+        bob.setPassword(pass)
+        bob.save()
+          .then(function (user) {
+            expect(user.hash).to.be.a('string')
+            expect(user.salt).to.be.a('string')
+            done()
+          })
+          .catch(function (err) {
+            log.fatal(err)
+            expect(err).to.be.null
+          })
+      })
     })
 
     describe('validatePassword', function () {
-      it('should return false if given an incorrect password')
+      it('should return false if given an incorrect password', function (done) {
+        const bob = new User({ email: 'bob@gmail.com' })
+        bob.setPassword(pass)
+        bob.save()
+          .then(function (user) {
+            let validPassword = user.validatePassword('incorrect')
+            expect(validPassword).to.be.false
+            done()
+          })
+          .catch(function (err) {
+            log.fatal(err)
+            expect(err).to.be.null
+          })
+      })
 
-      it('should return true if passed the correct password')
+      it('should return true if passed the correct password', function (done) {
+        const bob = new User({ email: 'bob@gmail.com' })
+        bob.setPassword(pass)
+        bob.save()
+          .then(function (user) {
+            let validPassword = user.validatePassword(pass)
+            expect(validPassword).to.be.true
+            done()
+          })
+          .catch(function (err) {
+            log.fatal(err)
+            expect(err).to.be.null
+          })
+      })
     })
   })
 })
