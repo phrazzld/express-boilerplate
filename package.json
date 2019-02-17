@@ -1,7 +1,7 @@
 {
-  "name": "PROJECT_NAME",
+  "name": "express-boilerplate",
   "version": "1.0.0",
-  "description": "PROJECT_DESCRIPTION",
+  "description": "All the basics for your next Express project.",
   "main": "index.js",
   "scripts": {
     "build": "npm run clean && babel -d ./build ./src -s",

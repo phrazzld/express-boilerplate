@@ -9,7 +9,7 @@ const User = require('@models/user').model
 router.get('/', (req, res) => {
   log.info('GET /')
   res.render('home', {
-    title: 'Wikirace',
+    title: 'Express Boilerplate',
     isLoggedIn: helpers.isLoggedIn(req)
   })
 })
