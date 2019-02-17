@@ -37,7 +37,7 @@ router.get('/signup', (req, res) => {
   })
 })
 
-router.post('/signup', (req, res) => {
+router.post('/signup', async (req, res) => {
   log.info('POST /signup')
   const { body: {
     email,
@@ -50,24 +50,17 @@ router.post('/signup', (req, res) => {
   if (password !== passwordConfirmation) {
     return res.status(422).send({ message: 'Password confirmation does not match' })
   }
-  const finalUser = new User({ email: email })
-  finalUser.setPassword(password)
-    .then(function (result) {
-      finalUser.save()
-        .then(user => {
-          passport.authenticate('local')(req, res, function () {
-            res.redirect('/profile')
-          })
-        })
-        .catch(err => {
-          log.fatal(err)
-          res.status(500).send(err)
-        })
+  try {
+    const user = new User({ email: email })
+    await user.setPassword(password)
+    const finalUser = await user.save()
+    passport.authenticate('local')(req, res, function () {
+      res.redirect('/profile')
     })
-    .catch(function (err) {
-      log.fatal(err)
-      res.status(500).send(err)
-    })
+  } catch (err) {
+    log.fatal(err)
+    res.status(500).send(err)
+  }
 })
 
 router.get('/logout', (req, res) => {
@@ -78,12 +71,17 @@ router.get('/logout', (req, res) => {
 
 router.get('/profile', (req, res) => {
   log.info('GET /profile')
-  log.info(req.user)
   res.render('profile', {
     title: 'Profile',
     email: helpers.getUserEmail(req),
     isLoggedIn: helpers.isLoggedIn(req)
   })
+})
+
+router.get('/reset-database', (req, res) => {
+  log.info('GET /reset-database')
+  helpers.resetDatabase()
+  res.redirect('/')
 })
 
 module.exports = router

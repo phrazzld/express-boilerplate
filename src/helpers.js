@@ -15,14 +15,13 @@ const getUserId = req => {
   return isLoggedIn(req) ? req.user.id : null
 }
 
-const resetDatabase = () => {
-  User.deleteMany({})
-    .then((result) => {
-      log.info(result)
-    })
-    .catch((err) => {
-      log.fatal(err)
-    })
+const resetDatabase = async () => {
+  try {
+    const result = await User.deleteMany({})
+    log.info(result)
+  } catch (err) {
+    log.fatal(err)
+  }
 }
 
 module.exports = {
