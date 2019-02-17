@@ -50,15 +50,21 @@ router.post('/signup', (req, res) => {
   if (password !== passwordConfirmation) {
     return res.status(422).send({ message: 'Password confirmation does not match' })
   }
-  const finalUser = new User({ email: email, password: password })
+  const finalUser = new User({ email: email })
   finalUser.setPassword(password)
-  finalUser.save()
-    .then(user => {
-      passport.authenticate('local')(req, res, function () {
-        res.redirect('/profile')
-      })
+    .then(function (result) {
+      finalUser.save()
+        .then(user => {
+          passport.authenticate('local')(req, res, function () {
+            res.redirect('/profile')
+          })
+        })
+        .catch(err => {
+          log.fatal(err)
+          res.status(500).send(err)
+        })
     })
-    .catch(err => {
+    .catch(function (err) {
       log.fatal(err)
       res.status(500).send(err)
     })

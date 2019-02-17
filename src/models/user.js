@@ -1,10 +1,12 @@
-// user.js
+// src/models/user.js
 
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
-const crypto = require('crypto')
+const bcrypt = require('bcrypt')
+const saltRounds = 10
 const validator = require('validator')
 const uniqueValidator = require('mongoose-unique-validator')
+const log = require('@root/config').loggers.dev()
 
 const UserSchema = new Schema({
   email: {
@@ -20,23 +22,36 @@ const UserSchema = new Schema({
   hash: {
     type: String,
     required: true
-  },
-  salt: {
-    type: String,
-    required: true
   }
 }, {
   timestamps: true
 })
 
 UserSchema.methods.setPassword = function (password) {
-  this.salt = crypto.randomBytes(16).toString('hex')
-  this.hash = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex')
+  let user = this
+  return new Promise(function (resolve, reject) {
+    bcrypt.hash(password, saltRounds, function (err, hash) {
+      if (err) {
+        log.fatal(err)
+        reject(err)
+      }
+      user.hash = hash
+      resolve(user)
+    })
+  })
 }
 
 UserSchema.methods.validatePassword = function (password) {
-  const hash = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex')
-  return this.hash === hash
+  let user = this
+  return new Promise(function (resolve, reject) {
+    bcrypt.compare(password, user.hash, function (err, res) {
+      if (err) {
+        log.fatal(err)
+        reject(err)
+      }
+      resolve(res)
+    })
+  })
 }
 
 UserSchema.plugin(uniqueValidator)

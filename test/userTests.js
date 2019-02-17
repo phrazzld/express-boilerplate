@@ -20,47 +20,26 @@ describe('User model', function () {
         .catch(function (err) {
           expect(err).to.exist
           err.should.be.an.instanceOf(Error)
-          let validationFailureMessage = 'User validation failed: salt: Path `salt` is required., hash: Path `hash` is required.'
+          let validationFailureMessage = 'User validation failed: hash: Path `hash` is required.'
           err.message.should.equal(validationFailureMessage)
           done()
         })
     })
 
-    it('should fail if an invalid email is passed', function (done) {
+    it('should fail if an invalid email is passed', async function () {
       const jim = new User({ email: 'jimgmail.com' })
       jim.setPassword(pass)
-      jim.save()
-        .then(function (user) {
-          log.fatal('user should not exist')
-          expect(user).to.be.null
-        })
-        .catch(function (err) {
-          expect(err).to.exist
-          err.should.be.an.instanceOf(Error)
-          let invalidEmailMessage = 'User validation failed: email'
-          err.message.should.include(invalidEmailMessage)
-          done()
-        })
-    })
-
-    it('should fail if a user with that email already exists', function (done) {
-      const bob = new User({ email: 'bob@gmail.com' })
-      const bobby = new User({ email: 'bob@gmail.com' })
-      bob.setPassword(pass)
-      bobby.setPassword(pass)
-      bob.save()
-        .then(function (bobUser) {
-          expect(bobUser).to.exist
-          bobby.save()
-            .then(function (bobbyUser) {
-              log.fatal('bobbyUser should not exist')
-              expect(bobbyUser).to.be.null
+        .then(function (result) {
+          jim.save()
+            .then(function (user) {
+              log.fatal('user should not exist')
+              expect(user).to.be.null
             })
             .catch(function (err) {
               expect(err).to.exist
               err.should.be.an.instanceOf(Error)
-              let existingEmailMessage = 'User validation failed: email: Error, expected `email` to be unique'
-              err.message.should.include(existingEmailMessage)
+              let invalidEmailMessage = 'email: Validator failed for path `email`'
+              err.message.should.include(invalidEmailMessage)
               done()
             })
         })
@@ -70,18 +49,68 @@ describe('User model', function () {
         })
     })
 
+    it('should fail if a user with that email already exists', function (done) {
+      const bob = new User({ email: 'bob@gmail.com' })
+      const bobby = new User({ email: 'bob@gmail.com' })
+      bob.setPassword(pass)
+        .then(function (result) {
+          bob.save()
+            .then(function (bobUser) {
+              expect(bobUser).to.exist
+              bobby.setPassword(pass)
+                .then(function (result) {
+                  bobby.save()
+                    .then(function (bobbyUser) {
+                      log.fatal('bobby should not save')
+                      expect(bobbyUser).to.be.null
+                    })
+                    .catch(function (err) {
+                      expect(err).to.exist
+                      err.should.be.an.instanceOf(Error)
+                      let existingEmailMessage = 'User validation failed: email: Error, expected `email` to be unique'
+                      err.message.should.include(existingEmailMessage)
+                      done()
+                    })
+                })
+                .catch(function (err) {
+                  console.log('bobby.setPassword failed')
+                  log.fatal(err)
+                  expect(err).to.be.null
+                })
+            })
+            .catch(function (err) {
+              console.log('bob.save failed')
+              log.fatal(err)
+              expect(err).to.be.null
+            })
+        })
+        .catch(function (err) {
+          console.log('bob.setPassword failed')
+          log.fatal(err)
+          expect(err).to.be.null
+        })
+    })
+
     it('should succeed if setPassword has been called', function (done) {
       const bob = new User({ email: 'bob@gmail.com' })
       bob.setPassword(pass)
-      bob.save()
-        .then(function (user) {
-          expect(user).to.not.have.any.keys('password')
-          expect(user.email).to.be.a('string')
-          expect(user.email).to.equal('bob@gmail.com')
-          expect(user.password).to.be.undefined
-          done()
+        .then(function (result) {
+          bob.save()
+            .then(function (user) {
+              expect(user).to.not.have.any.keys('password')
+              expect(user.email).to.be.a('string')
+              expect(user.email).to.equal('bob@gmail.com')
+              expect(user.password).to.be.undefined
+              done()
+            })
+            .catch(function (err) {
+              console.log('bob.save failed')
+              log.fatal(err)
+              expect(err).to.be.null
+            })
         })
         .catch(function (err) {
+          console.log('bob.setPassword failed')
           log.fatal(err)
           expect(err).to.be.null
         })
@@ -94,31 +123,46 @@ describe('User model', function () {
       it('should not save the password plaintext to the user document', function (done) {
         const bob = new User({ email: 'bob@gmail.com' })
         bob.setPassword(pass)
-        bob.save()
-          .then(function (user) {
-            expect(user).to.not.have.any.keys('password')
-            Object.keys(user._doc).forEach(function (key) {
-              key.should.not.equal('password')
-              user[key].should.not.equal(pass)
-            })
-            done()
+          .then(function (result) {
+            bob.save()
+              .then(function (user) {
+                expect(user).to.not.have.any.keys('password')
+                Object.keys(user._doc).forEach(function (key) {
+                  key.should.not.equal('password')
+                  user[key].should.not.equal(pass)
+                })
+                done()
+              })
+              .catch(function (err) {
+                console.log('bob.save failed')
+                log.fatal(err)
+                expect(err).to.be.null
+              })
           })
           .catch(function (err) {
+            console.log('bob.setPassword failed')
             log.fatal(err)
             expect(err).to.be.null
           })
       })
 
-      it('should save a salt and hash to the user document', function (done) {
+      it('should save a hash to the user document', function (done) {
         const bob = new User({ email: 'bob@gmail.com' })
         bob.setPassword(pass)
-        bob.save()
-          .then(function (user) {
-            expect(user.hash).to.be.a('string')
-            expect(user.salt).to.be.a('string')
-            done()
+          .then(function (result) {
+            bob.save()
+              .then(function (user) {
+                expect(user.hash).to.be.a('string')
+                done()
+              })
+              .catch(function (err) {
+                console.log('bob.save failed')
+                log.fatal(err)
+                expect(err).to.be.null
+              })
           })
           .catch(function (err) {
+            console.log('bob.setPassword failed')
             log.fatal(err)
             expect(err).to.be.null
           })
@@ -129,13 +173,28 @@ describe('User model', function () {
       it('should return false if given an incorrect password', function (done) {
         const bob = new User({ email: 'bob@gmail.com' })
         bob.setPassword(pass)
-        bob.save()
-          .then(function (user) {
-            let validPassword = user.validatePassword('incorrect')
-            expect(validPassword).to.be.false
-            done()
+          .then(function (result) {
+            bob.save()
+              .then(function (user) {
+                user.validatePassword('incorrect')
+                  .then(function (match) {
+                    expect(match).to.be.false
+                    done()
+                  })
+                  .catch(function (err) {
+                    console.log('user.validatePassword failed')
+                    log.fatal(err)
+                    expect(err).to.be.null
+                  })
+              })
+              .catch(function (err) {
+                console.log('bob.save failed')
+                log.fatal(err)
+                expect(err).to.be.null
+              })
           })
           .catch(function (err) {
+            console.log('bob.setPassword failed')
             log.fatal(err)
             expect(err).to.be.null
           })
@@ -144,13 +203,28 @@ describe('User model', function () {
       it('should return true if passed the correct password', function (done) {
         const bob = new User({ email: 'bob@gmail.com' })
         bob.setPassword(pass)
-        bob.save()
-          .then(function (user) {
-            let validPassword = user.validatePassword(pass)
-            expect(validPassword).to.be.true
-            done()
+          .then(function (result) {
+            bob.save()
+              .then(function (user) {
+                user.validatePassword(pass)
+                  .then(function (match) {
+                    expect(match).to.be.true
+                    done()
+                  })
+                  .catch(function (err) {
+                    console.log('user.validatePassword failed')
+                    log.fatal(err)
+                    expect(err).to.be.null
+                  })
+              })
+              .catch(function (err) {
+                console.log('bob.save failed')
+                log.fatal(err)
+                expect(err).to.be.null
+              })
           })
           .catch(function (err) {
+            console.log('bob.setPassword failed')
             log.fatal(err)
             expect(err).to.be.null
           })

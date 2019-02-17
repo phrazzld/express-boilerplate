@@ -13,11 +13,17 @@ passport.use(new LocalStrategy({
       if (!user) {
         return done(null, false, { message: `Can't find user with email ${email}` })
       }
-      const validPassword = user.validatePassword(password)
-      if (!validPassword) {
-        return done(null, false, { message: `Invalid password` })
-      }
-      return done(null, user)
+      user.validatePassword(password)
+        .then(match => {
+          if (!match) {
+            return done(null, false, { message: 'Invalid password' })
+          }
+          return done(null, user)
+        })
+        .catch(err => {
+          log.fatal(err)
+          return done(err)
+        })
     })
     .catch(err => {
       log.fatal(err)
