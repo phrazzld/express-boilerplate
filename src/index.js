@@ -3,6 +3,8 @@
 require('module-alias/register')
 const express = require('express')
 const app = express()
+const helmet = require('helmet')
+app.use(helmet())
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
