@@ -2,10 +2,10 @@
   "name": "express-boilerplate",
   "version": "1.0.0",
   "description": "All the basics for your next Express project.",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "build": "npm run clean && babel -d ./build ./src -s",
-    "start": "npm run build && nodemon ./src/index.js | bunyan",
+    "start": "npm run build && nodemon ./src/server.js | bunyan",
     "clean": "rm -rf ./build && mkdir build",
     "heroku-postbuild": "npm install && npm run build",
     "test": "mocha"
@@ -31,6 +31,7 @@
     "nodemon": "^1.18.9",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
+    "supertest": "^3.4.2",
     "validator": "^10.11.0"
   },
   "devDependencies": {

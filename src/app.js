@@ -1,6 +1,5 @@
-// src/index.js
+// src/app.js
 
-require('module-alias/register')
 const express = require('express')
 const app = express()
 const helmet = require('helmet')
@@ -9,24 +8,12 @@ const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 const path = require('path')
+const mongoose = require('mongoose')
 const MongoStore = require('connect-mongo')(session)
 const config = require('@root/config')
 const log = config.loggers.dev()
 const routes = require('@routes/index')
 const auth = require('@root/auth')
-const mongoose = require('mongoose')
-
-mongoose.Promise = global.Promise
-
-// Set up database connection
-mongoose.connect(config.mongoUrl, { server: { reconnectTries: Number.MAX_VALUE } })
-mongoose.connection
-  .once('open', () => {
-    log.info('Mongoose successfully connected to Mongo')
-  })
-  .on('error', err => {
-    log.fatal(err)
-  })
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -52,10 +39,4 @@ app.set('view engine', 'ejs')
 
 app.use('/', routes)
 
-app.listen(config.port, function (err) {
-  if (err) {
-    log.fatal(err)
-  } else {
-    log.info(`Port ${config.port} operational`)
-  }
-})
+module.exports = app
