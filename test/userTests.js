@@ -26,7 +26,7 @@ describe('User model', function () {
         })
     })
 
-    it('should fail if an invalid email is passed', async function () {
+    it('should fail if an invalid email is passed', function (done) {
       const jim = new User({ email: 'jimgmail.com' })
       jim.setPassword(pass)
         .then(function (result) {

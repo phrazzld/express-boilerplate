@@ -3,7 +3,6 @@
 const express = require('express')
 const app = express()
 const helmet = require('helmet')
-app.use(helmet())
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
@@ -14,6 +13,25 @@ const config = require('@root/config')
 const log = config.loggers.dev()
 const routes = require('@routes/index')
 const auth = require('@root/auth')
+
+app.use(helmet())
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"]
+  }
+}))
+app.use(helmet.permittedCrossDomainPolicies())
+app.use(helmet.featurePolicy({
+  features: {
+    vibrate: ["'none'"],
+    payment: ["'none'"],
+    syncXhr: ["'none'"],
+    notifications: ["'none'"],
+    microphone: ["'none'"],
+    camera: ["'none'"],
+    geolocation: ["'none'"]
+  }
+}))
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
