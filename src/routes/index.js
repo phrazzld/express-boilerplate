@@ -63,25 +63,19 @@ router.post('/signup', async (req, res) => {
   }
 })
 
-router.get('/logout', (req, res) => {
+router.get('/logout', helpers.isAuthenticated, (req, res) => {
   log.info('GET /logout')
   req.logout()
   res.redirect('/')
 })
 
-router.get('/profile', (req, res) => {
+router.get('/profile', helpers.isAuthenticated, (req, res) => {
   log.info('GET /profile')
   res.render('profile', {
     title: 'Profile',
     email: helpers.getUserEmail(req),
     isLoggedIn: helpers.isLoggedIn(req)
   })
-})
-
-router.get('/reset-database', (req, res) => {
-  log.info('GET /reset-database')
-  helpers.resetDatabase()
-  res.redirect('/')
 })
 
 module.exports = router

@@ -15,18 +15,16 @@ const getUserId = req => {
   return isLoggedIn(req) ? req.user.id : null
 }
 
-const resetDatabase = async () => {
-  try {
-    const result = await User.deleteMany({})
-    log.info(result)
-  } catch (err) {
-    log.fatal(err)
+const isAuthenticated = (req, res, next) => {
+  if (req.user != null) {
+    return next()
   }
+  return res.status(401).redirect('/login')
 }
 
 module.exports = {
   isLoggedIn,
   getUserEmail,
   getUserId,
-  resetDatabase
+  isAuthenticated
 }
