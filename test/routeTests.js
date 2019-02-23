@@ -9,6 +9,11 @@ const User = require('@models/user').model
 
 const unrestrictedRoutes = [ '/', '/login', '/signup' ]
 const restrictedRoutes = [ '/profile', '/profile/edit', '/logout' ]
+const userCreds = {
+  email: 'test@test.com',
+  password: 'passw0rd',
+  'password-confirmation': 'passw0rd'
+}
 const existingUser = { email: 'been@here.com', password: 'passw0rd' }
 const authenticatedUser = request.agent(app)
 
@@ -94,23 +99,87 @@ describe('Route testing', function () {
 
   describe('POST', function () {
     describe('/signup', function () {
-      it('should 302 when sent valid credentials')
+      it('should 302 when sent valid credentials', function (done) {
+        request(app)
+          .post('/signup')
+          .send(userCreds)
+          .end(function (err, res) {
+            handleError(err)
+            expect(res.text).to.include('Found. Redirecting to /profile')
+            done()
+          })
+      })
 
-      it('should 422 if password and confirmation do not match')
+      it('should 422 if password and confirmation do not match', function (done) {
+        let badCreds = userCreds
+        badCreds['password-confirmation'] = 'wrong'
+        request(app)
+          .post('/signup')
+          .send(badCreds)
+          .expect(422, done)
+      })
 
-      it('should 422 if email field is empty')
+      it('should 422 if email field is empty', function (done) {
+        let badCreds = userCreds
+        badCreds.email = null  // undefined? empty string?
+        request(app)
+          .post('/signup')
+          .send(badCreds)
+          .expect(422, done)
+      })
 
-      it('should 422 if password field is empty')
+      it('should 422 if password field is empty', function (done) {
+        let badCreds = userCreds
+        badCreds.password = null
+        request(app)
+          .post('/signup')
+          .send(badCreds)
+          .expect(422, done)
+      })
 
-      it('should 422 if sent an invalid email')
+      it('should 422 if sent an invalid email', function (done) {
+        let badCreds = userCreds
+        badCreds.email = 'whoatyahoo.com'
+        request(app)
+          .post('/signup')
+          .send(badCreds)
+          .expect(422, done)
+      })
 
-      it('should 500 if signing up an existing user')
+      it('should 500 if signing up an existing user', function (done) {
+        let badCreds = existingUser
+        badCreds['password-confirmation'] = existingUser.password
+        request(app)
+          .post('/signup')
+          .send(badCreds)
+          .expect(500, done)
+      })
     })
 
     describe('/login', function () {
-      it('should 302 to /profile when sent valid credentials')
+      it('should 302 to /profile when sent valid credentials', function (done) {
+        request(app)
+          .post('/login')
+          .send(existingUser)
+          .end(function (err, res) {
+            handleError(err)
+            expect(res.text).to.include('Found. Redirecting to /profile')
+            done()
+          })
+      })
 
-      it('should 302 to /login when sent invalid credentials')
+      it('should 302 to /login when sent invalid credentials', function (done) {
+        let badCreds = existingUser
+        badCreds.password = 'nope'
+        request(app)
+          .post('/login')
+          .send(badCreds)
+          .end(function (err, res) {
+            handleError(err)
+            expect(res.text).to.include('Found. Redirecting to /login')
+            done()
+          })
+      })
     })
 
     describe('/profile/edit', function () {
@@ -133,9 +202,25 @@ describe('Route testing', function () {
     })
 
     describe('/profile/delete', function () {
-      it('should 302 to / if sent as authenticated user')
+      it('should 302 to / if sent as authenticated user', function (done) {
+        authenticatedUser
+          .post('/profile/delete')
+          .end(function (err, res) {
+            handleError(err)
+            expect(res.text).to.equal('Found. Redirecting to /')
+            done()
+          })
+      })
 
-      it('should 302 to /login if sent as unauthenticated user')
+      it('should 302 to /login if sent as unauthenticated user', function (done) {
+        request(app)
+          .post('/profile/delete')
+          .end(function (err, res) {
+            handleError(err)
+            expect(res.text).to.equal('Found. Redirecting to /login')
+            done()
+          })
+      })
     })
   })
 })

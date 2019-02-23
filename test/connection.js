@@ -15,7 +15,7 @@ before(function (done) {
   mongoose.connect(config.mongoUrl)
   mongoose.connection
     .once('open', function () {
-      done()
+      mongoose.connection.collections.users.drop(function () { done() })
     })
     .on('error', function (err) {
       log.fatal(err)
