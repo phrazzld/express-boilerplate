@@ -22,12 +22,6 @@ before(function (done) {
     })
 })
 
-afterEach(function (done) {
-  mongoose.connection.collections.users.drop(function () {
-    done()
-  })
-})
-
 after(function (done) {
   mongoose.connection.close()
   done()

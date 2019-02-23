@@ -5,10 +5,15 @@ const should = require('chai').should()
 const expect = require('chai').expect
 const User = require('@models/user').model
 const log = require('@root/config').loggers.test()
+const mongoose = require('mongoose')
 
 const pass = 'passw0rd'
 
 describe('User model', function () {
+  afterEach(function (done) {
+    mongoose.connection.collections.users.drop(function () { done() })
+  })
+
   describe('saving new documents', function () {
     it('should fail if setPassword has not been called', function (done) {
       const bob = new User({ email: 'bob@gmail.com' })

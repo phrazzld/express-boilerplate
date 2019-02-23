@@ -1,0 +1,13 @@
+<%- include('header') %>
+  <h2>Edit Profile</h2>
+  <form action='/profile/edit' method='POST'>
+    Email: <input type='text' name='email' value='<%= email %>'><br>
+    Password: <input type='password' name='password'><br>
+    Password (confirm): <input type='password' name='password-confirmation'><br>
+    <input type='submit' value='Save'>
+  </form>
+
+  <form action='/profile/delete' method='POST'>
+    <input type='submit' value='Delete Account'>
+  </form>
+<%- include('footer') %>

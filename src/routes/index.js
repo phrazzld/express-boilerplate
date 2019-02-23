@@ -78,4 +78,45 @@ router.get('/profile', helpers.isAuthenticated, (req, res) => {
   })
 })
 
+router.get('/profile/edit', helpers.isAuthenticated, (req, res) => {
+  log.info('GET /profile/edit')
+  res.render('edit-profile', {
+    title: 'Edit Profile',
+    email: helpers.getUserEmail(req),
+    isLoggedIn: helpers.isLoggedIn(req)
+  })
+})
+
+router.post('/profile/edit', helpers.isAuthenticated, async (req, res) => {
+  log.info('PUT /profile/edit')
+  const { body: {
+    email,
+    password,
+    'password-confirmation': passwordConfirmation
+  } } = req
+  try {
+    const user = await User.findOne({ _id: helpers.getUserId(req) })
+    if (!user.validatePassword(password)) return res.status(422).redirect('/profile/edit')
+    if (password !== passwordConfirmation) return res.status(422).redirect('/profile/edit')
+    if (email) user.email = email
+    if (password) await user.setPassword(password)
+    await user.save()
+    res.redirect('/profile')
+  } catch (err) {
+    log.fatal(err)
+    res.status(500).send(err)
+  }
+})
+
+router.post('/profile/delete', helpers.isAuthenticated, async (req, res) => {
+  log.info('DELETE /profile/edit')
+  try {
+    await User.deleteOne({ _id: helpers.getUserId(req) })
+    res.redirect('/')
+  } catch (err) {
+    log.fatal(err)
+    res.status(500).send(err)
+  }
+})
+
 module.exports = router
