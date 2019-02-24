@@ -96,7 +96,6 @@ router.post('/profile/edit', helpers.isAuthenticated, async (req, res) => {
   } } = req
   try {
     const user = await User.findOne({ _id: helpers.getUserId(req) })
-    if (!user.validatePassword(password)) return res.status(422).redirect('/profile/edit')
     if (password !== passwordConfirmation) return res.status(422).redirect('/profile/edit')
     if (email) user.email = email
     if (password) await user.setPassword(password)
