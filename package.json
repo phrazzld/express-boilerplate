@@ -8,7 +8,7 @@
     "start": "npm run build && nodemon ./src/server.js | bunyan",
     "clean": "rm -rf ./build && mkdir build",
     "heroku-postbuild": "npm install && npm run build",
-    "test": "mocha"
+    "test": "mocha | bunyan"
   },
   "author": "Phaedrus Raznikov",
   "license": "ISC",

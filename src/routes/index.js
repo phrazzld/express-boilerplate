@@ -21,4 +21,6 @@ router.get('/profile/edit', helpers.forceAuth, userController.getProfileEdit)
 router.post('/profile/edit', helpers.forceAuth, userController.postProfileEdit)
 router.post('/profile/delete', helpers.forceAuth, userController.postProfileDelete)
 
+router.get('/error/:statusCode', pageController.getError)
+
 module.exports = router

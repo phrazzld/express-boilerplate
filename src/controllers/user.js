@@ -7,10 +7,14 @@ const User = require('@models/user').model
 
 const getLogin = (req, res) => {
   log.info('GET /login')
-  res.render('login', {
-    title: 'Login',
-    isLoggedIn: helpers.isLoggedIn(req)
-  })
+  if (helpers.isLoggedIn(req)) {
+    res.redirect('/profile')
+  } else {
+    res.render('login', {
+      title: 'Login',
+      isLoggedIn: helpers.isLoggedIn(req)
+    })
+  }
 }
 
 const postLogin = (req, res) => {
@@ -20,10 +24,14 @@ const postLogin = (req, res) => {
 
 const getSignup = (req, res) => {
   log.info('GET /signup')
-  res.render('signup', {
-    title: 'Signup',
-    isLoggedIn: helpers.isLoggedIn(req)
-  })
+  if (helpers.isLoggedIn(req)) {
+    res.redirect('/profile')
+  } else {
+    res.render('signup', {
+      title: 'Signup',
+      isLoggedIn: helpers.isLoggedIn(req)
+    })
+  }
 }
 
 const postSignup = async (req, res) => {
@@ -34,10 +42,10 @@ const postSignup = async (req, res) => {
     'password-confirmation': passwordConfirmation
   } } = req
   if (!email || !password) {
-    return res.status(422).send({ message: 'Invalid email or password' })
+    return res.status(422).redirect('/error/422')
   }
   if (password !== passwordConfirmation) {
-    return res.status(422).send({ message: 'Password confirmation does not match' })
+    return res.status(422).redirect('/error/422')
   }
   try {
     const user = new User({ email: email })
@@ -48,7 +56,7 @@ const postSignup = async (req, res) => {
     })
   } catch (err) {
     log.fatal(err)
-    res.status(500).send(err)
+    res.status(500).redirect('/error/500')
   }
 }
 
@@ -85,14 +93,14 @@ const postProfileEdit = async (req, res) => {
   } } = req
   try {
     const user = await User.findOne({ _id: helpers.getUserId(req) })
-    if (password !== passwordConfirmation) return res.status(422).redirect('/profile/edit')
+    if (password !== passwordConfirmation) return res.status(422).redirect('/error/422')
     if (email) user.email = email
     if (password) await user.setPassword(password)
     await user.save()
     res.redirect('/profile')
   } catch (err) {
     log.fatal(err)
-    res.status(500).send(err)
+    res.status(500).redirect('/error/500')
   }
 }
 
@@ -103,7 +111,7 @@ const postProfileDelete = async (req, res) => {
     res.redirect('/')
   } catch (err) {
     log.fatal(err)
-    res.status(500).send(err)
+    res.status(500).redirect('/error/500')
   }
 }
 

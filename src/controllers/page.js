@@ -11,6 +11,16 @@ const getHome = (req, res) => {
   })
 }
 
+const getError = (req, res) => {
+  const statusCode = req.params.statusCode
+  log.info(`GET /error/${statusCode}`)
+  res.render('error', {
+    title: `${statusCode} error`,
+    statusCode: statusCode
+  })
+}
+
 module.exports = {
-  getHome
+  getHome,
+  getError
 }
