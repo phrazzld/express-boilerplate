@@ -4,6 +4,7 @@ const bunyan = require('bunyan')
 
 module.exports = {
   mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/express-boilerplate',
+  mongoTestUrl: 'mongodb://localhost:27017/boiler-test',
   port: process.env.PORT || 8080,
   loggers: {
     dev: () => bunyan.createLogger({ name: 'dev', level: 'debug' }),

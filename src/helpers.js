@@ -15,7 +15,7 @@ const getUserId = req => {
   return isLoggedIn(req) ? req.user.id : null
 }
 
-const isAuthenticated = (req, res, next) => {
+const forceAuth = (req, res, next) => {
   if (req.user != null) {
     return next()
   }
@@ -26,5 +26,5 @@ module.exports = {
   isLoggedIn,
   getUserEmail,
   getUserId,
-  isAuthenticated
+  forceAuth
 }

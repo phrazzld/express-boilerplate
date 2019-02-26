@@ -6,9 +6,10 @@ const log = require('@root/config').loggers.test()
 const app = require('@root/app')
 const expect = require('chai').expect
 const User = require('@models/user').model
+const proctor = require('@test/proctor')
 
 const unrestrictedRoutes = [ '/', '/login', '/signup' ]
-const restrictedRoutes = [ '/profile', '/profile/edit', '/logout' ]
+const restrictedRoutes = [ '/profile', '/profile/edit' ]
 const userCreds = {
   email: 'test@test.com',
   password: 'passw0rd',
@@ -37,7 +38,6 @@ describe('Route testing', function () {
         expect(res.statusCode).to.equal(302)
       })
   })
-
   unrestrictedRoutes.forEach(function (route) {
     describe(`GET ${route}`, function () {
       it('headers should be set safely', function (done) {
@@ -65,7 +65,6 @@ describe('Route testing', function () {
             done()
           })
       })
-
       it('should respond with 200', function (done) {
         request(app)
           .get(route)
@@ -73,7 +72,6 @@ describe('Route testing', function () {
       })
     })
   })
-
   restrictedRoutes.forEach(function (route) {
     describe(`GET ${route}`, function () {
       it('should 302 to /login', function (done) {
@@ -88,7 +86,6 @@ describe('Route testing', function () {
       })
     })
   })
-
   describe('/profile with a logged in user', function () {
     it('should 200', function (done) {
       authenticatedUser
@@ -96,7 +93,6 @@ describe('Route testing', function () {
         .expect(200, done)
     })
   })
-
   describe('POST', function () {
     describe('/signup', function () {
       it('should 302 when sent valid credentials', function (done) {
@@ -109,7 +105,6 @@ describe('Route testing', function () {
             done()
           })
       })
-
       it('should 422 if password and confirmation do not match', function (done) {
         let badCreds = userCreds
         badCreds['password-confirmation'] = 'wrong'
@@ -118,7 +113,6 @@ describe('Route testing', function () {
           .send(badCreds)
           .expect(422, done)
       })
-
       it('should 422 if email field is empty', function (done) {
         let badCreds = userCreds
         badCreds.email = null  // undefined? empty string?
@@ -127,7 +121,6 @@ describe('Route testing', function () {
           .send(badCreds)
           .expect(422, done)
       })
-
       it('should 422 if password field is empty', function (done) {
         let badCreds = userCreds
         badCreds.password = null
@@ -136,7 +129,6 @@ describe('Route testing', function () {
           .send(badCreds)
           .expect(422, done)
       })
-
       it('should 422 if sent an invalid email', function (done) {
         let badCreds = userCreds
         badCreds.email = 'whoatyahoo.com'
@@ -145,7 +137,6 @@ describe('Route testing', function () {
           .send(badCreds)
           .expect(422, done)
       })
-
       it('should 500 if signing up an existing user', function (done) {
         let badCreds = existingUser
         badCreds['password-confirmation'] = existingUser.password
@@ -155,7 +146,6 @@ describe('Route testing', function () {
           .expect(500, done)
       })
     })
-
     describe('/login', function () {
       it('should 302 to /profile when sent valid credentials', function (done) {
         request(app)
@@ -167,7 +157,6 @@ describe('Route testing', function () {
             done()
           })
       })
-
       it('should 302 to /login when sent invalid credentials', function (done) {
         let badCreds = existingUser
         badCreds.password = 'nope'
@@ -181,7 +170,6 @@ describe('Route testing', function () {
           })
       })
     })
-
     describe('/profile/edit', function () {
       it('should 302 to /profile with email updated if sent valid credentials',
         function (done) {
@@ -200,7 +188,6 @@ describe('Route testing', function () {
             })
         })
     })
-
     describe('/profile/delete', function () {
       it('should 302 to / if sent as authenticated user', function (done) {
         authenticatedUser
@@ -211,7 +198,6 @@ describe('Route testing', function () {
             done()
           })
       })
-
       it('should 302 to /login if sent as unauthenticated user', function (done) {
         request(app)
           .post('/profile/delete')
@@ -222,5 +208,14 @@ describe('Route testing', function () {
           })
       })
     })
+  })
+
+  // Cleanup
+  after(async function () {
+    try {
+      await User.deleteMany({})
+    } catch (err) {
+      proctor.check(err)
+    }
   })
 })
