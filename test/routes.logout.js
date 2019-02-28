@@ -13,10 +13,14 @@ const authenticatedUser = request.agent(app)
 describe('/profile', function () {
   // Setup test environment with an authenticated user account
   before(async function () {
-    const user = new User({ email: userCreds.email })
-    await user.setPassword(userCreds.password)
-    await user.save()
-    await authenticatedUser.post('/login').send(userCreds)
+    try {
+      const user = new User({ email: userCreds.email })
+      await user.setPassword(userCreds.password)
+      await user.save()
+      await authenticatedUser.post('/login').send(userCreds)
+    } catch (err) {
+      proctor.check(err)
+    }
   })
 
   // Tests
@@ -61,7 +65,11 @@ describe('/profile', function () {
 
   // Cleanup
   after(async function () {
-    await authenticatedUser.get('/logout')
-    await User.remove({ email: userCreds.email })
+    try {
+      await authenticatedUser.get('/logout')
+      await User.remove({ email: userCreds.email })
+    } catch (err) {
+      proctor.check(err)
+    }
   })
 })

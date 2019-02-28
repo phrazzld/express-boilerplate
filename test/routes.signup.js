@@ -13,10 +13,14 @@ const authenticatedUser = request.agent(app)
 describe('/signup', function () {
   // Set up authenticated user
   before(async function () {
-    const user = new User({ email: userCreds.email })
-    await user.setPassword(userCreds.password)
-    await user.save()
-    await authenticatedUser.post('/login').send(userCreds)
+    try {
+      const user = new User({ email: userCreds.email })
+      await user.setPassword(userCreds.password)
+      await user.save()
+      await authenticatedUser.post('/login').send(userCreds)
+    } catch (err) {
+      proctor.check(err)
+    }
   })
 
   describe('GET', function () {
@@ -123,7 +127,11 @@ describe('/signup', function () {
 
   // Cleanup
   after(async function () {
-    await User.remove({ email: userCreds.email })
-    await authenticatedUser.get('/logout')
+    try {
+      await User.remove({ email: userCreds.email })
+      await authenticatedUser.get('/logout')
+    } catch (err) {
+      proctor.check(err)
+    }
   })
 })
